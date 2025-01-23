@@ -47,5 +47,4 @@ int main() {
 		WaitForSingleObject(hThread, INFINITE);
 		return 0;
 	}
-
 }
